@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mm | in unit switch — live example</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231b1714'/%3E%3Crect x='7' y='12' width='18' height='8' rx='4' fill='none' stroke='%23f7f4ee' stroke-width='2'/%3E%3Ccircle cx='20' cy='16' r='2.6' fill='%23f7f4ee'/%3E%3C/svg%3E">
+<meta name="description" content="A zero-dependency millimetre / inch switch with live conversion, ported from The Chop Lab.">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f4ecdf;
+    --bg-warm: #ebdfcb;
+    --surface: #fbf6ec;
+    --fg: #241c15;
+    --muted: #6d6153;
+    --border: #ddd0ba;
+    --primary: #9a4a2c;
+    --shadow-lift: 0 0 0 1px rgb(36 28 21 / 0.06), 0 1px 2px -1px rgb(36 28 21 / 0.07), 0 2px 4px 0 rgb(36 28 21 / 0.04);
+    --shadow-card: 0 1px 2px rgb(36 28 21 / 0.05), 0 12px 32px -12px rgb(36 28 21 / 0.18);
+    --shadow-press: inset 0 1px 2px rgb(36 28 21 / 0.14), inset 0 0 0 1px rgb(36 28 21 / 0.06);
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: clamp(1.25rem, 4vw, 3rem);
+    font-family: var(--font);
+    color: var(--fg);
+    background:
+      radial-gradient(900px 500px at 12% -10%, #fff9ee 0%, transparent 60%),
+      radial-gradient(700px 420px at 100% 110%, #ecdfc8 0%, transparent 55%),
+      var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .demo { width: min(660px, 100%); }
+
+  .eyebrow {
+    margin: 0 0 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--primary);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(1.9rem, 5vw, 2.6rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+
+  h1 span { color: var(--border); font-weight: 300; padding: 0 0.15em; }
+
+  .lede {
+    margin: 0.6rem 0 1.5rem;
+    max-width: 46ch;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 1.25rem;
+    padding: clamp(1.1rem, 3vw, 1.5rem);
+    box-shadow: var(--shadow-card);
+  }
+
+  .card__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.9rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .card__title { margin: 0; font-size: 1.02rem; font-weight: 600; letter-spacing: -0.01em; }
+  .card__sub { margin: 0.25rem 0 0; font-size: 0.82rem; color: var(--muted); }
+
+  /* --- The switch (ported from chop-lab.com) ---------------------------- */
+  .unit-switch {
+    position: relative;
+    display: inline-grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: center;
+    height: 2.25rem;
+    padding: 0.2rem;
+    border-radius: 9999px;
+    background: var(--bg-warm);
+    box-shadow: var(--shadow-press);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .unit-switch__thumb {
+    position: absolute;
+    top: 0.2rem;
+    bottom: 0.2rem;
+    left: 0.2rem;
+    width: calc(50% - 0.2rem);
+    border-radius: 9999px;
+    background: var(--surface);
+    box-shadow: var(--shadow-lift);
+    transition: transform 250ms var(--ease);
+  }
+
+  .unit-switch[data-unit="mm"] .unit-switch__thumb { transform: translateX(0); }
+  .unit-switch[data-unit="in"] .unit-switch__thumb { transform: translateX(100%); }
+
+  .unit-switch__option {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    height: 100%;
+    min-width: 2.6rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.55rem;
+    border: 0;
+    border-radius: 9999px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+    transition: color 150ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .unit-switch__option:hover { color: var(--fg); }
+  .unit-switch__option[aria-pressed="true"] { color: var(--fg); }
+  .unit-switch__option:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  /* --- Live dimensions -------------------------------------------------- */
+  .specs { margin: 0; padding: 0; }
+
+  .spec {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .spec:last-child { border-bottom: 0; }
+  .spec dt { font-size: 0.9rem; color: var(--muted); }
+  .spec dd { margin: 0; font-family: var(--mono); font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+  .spec dd .num { font-weight: 600; }
+  .spec dd .unit { color: var(--primary); font-size: 0.8em; margin-left: 0.15em; }
+
+  .is-flipping { animation: flip 380ms var(--ease) both; }
+
+  @keyframes flip {
+    0% { opacity: 0.35; transform: translateY(-4px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  .converter {
+    margin-top: 1.1rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.9rem;
+  }
+
+  .converter__field { flex: 1 1 12rem; min-width: 0; }
+
+  .converter label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .field {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.75rem;
+    background: #fffdf8;
+    border: 1px solid var(--border);
+    border-radius: 0.7rem;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+
+  .field:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgb(154 74 44 / 0.14);
+  }
+
+  .field input {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    font-family: var(--mono);
+    font-size: 1rem;
+    color: var(--fg);
+    outline: none;
+  }
+
+  .field__unit { font-size: 0.8rem; font-weight: 600; color: var(--primary); }
+
+  .converter__out {
+    margin: 0 0 0.6rem;
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    color: var(--fg);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .converter__out span { color: var(--muted); }
+
+  .foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-top: 1.1rem;
+    font-size: 0.82rem;
+  }
+
+  .foot a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--border); padding-bottom: 1px; }
+  .foot a:hover { color: var(--primary); border-color: var(--primary); }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px; height: 1px;
+    margin: -1px; padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Embedded preview mode used by the root showcase. */
+  html.is-embedded body { padding: 1.25rem; }
+  html.is-embedded .eyebrow,
+  html.is-embedded h1,
+  html.is-embedded .lede,
+  html.is-embedded .foot { display: none; }
+
+  @media (max-width: 480px) {
+    .spec dd { font-size: 0.9rem; }
+    .converter__out { margin-bottom: 0.35rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+<main class="demo">
+  <p class="eyebrow">Minescout switches &middot; 01 / 04</p>
+  <h1>mm <span>|</span> in</h1>
+  <p class="lede">A unit toggle with a sliding thumb. Every dimension on the card is stored in millimetres and converted the moment you flip the switch.</p>
+
+  <section class="card" data-preview aria-labelledby="card-title">
+    <div class="card__top">
+      <div>
+        <h2 class="card__title" id="card-title">Part dimensions</h2>
+        <p class="card__sub">The same parts, measured your way.</p>
+      </div>
+
+      <div class="unit-switch" id="unit-switch" role="group" aria-label="Measurement units" data-unit="mm">
+        <span class="unit-switch__thumb" aria-hidden="true"></span>
+        <button class="unit-switch__option" type="button" data-unit="mm" aria-pressed="true" title="Millimetres">mm</button>
+        <button class="unit-switch__option" type="button" data-unit="in" aria-pressed="false" title="Inches">in</button>
+      </div>
+    </div>
+
+    <dl class="specs">
+      <div class="spec"><dt>Cube edge</dt><dd><span class="num" data-mm="256">256</span><span class="unit">mm</span></dd></div>
+      <div class="spec"><dt>Rail spacing</dt><dd><span class="num" data-mm="80">80</span><span class="unit">mm</span></dd></div>
+      <div class="spec"><dt>Bucket lip</dt><dd><span class="num" data-mm="4">4</span><span class="unit">mm</span></dd></div>
+      <div class="spec"><dt>Nozzle diameter</dt><dd><span class="num" data-mm="0.4">0.4</span><span class="unit">mm</span></dd></div>
+      <div class="spec"><dt>Panel thickness</dt><dd><span class="num" data-mm="18">18</span><span class="unit">mm</span></dd></div>
+    </dl>
+
+    <div class="converter">
+      <div class="converter__field">
+        <label for="custom-length">Try any length</label>
+        <div class="field">
+          <input id="custom-length" type="number" inputmode="decimal" step="any" min="0" value="120" aria-describedby="custom-out">
+          <span class="field__unit" id="custom-unit">mm</span>
+        </div>
+      </div>
+      <p class="converter__out" id="custom-out">= 4.72 in</p>
+    </div>
+
+    <p class="visually-hidden" role="status" aria-live="polite" id="live-status">Showing millimetres.</p>
+  </section>
+
+  <nav class="foot" aria-label="Switch links">
+    <a href="../index.html">&larr; All switches</a>
+    <a href="how-to-add.md">How to add this switch &rarr;</a>
+  </nav>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  if (new URLSearchParams(window.location.search).has("embed")) {
+    document.documentElement.classList.add("is-embedded");
+  }
+
+  var MM_PER_IN = 25.4;
+  var STORAGE_KEY = "mm-in-unit-switch";
+  var UNITS = ["mm", "in"];
+
+  var root = document.getElementById("unit-switch");
+  var buttons = Array.prototype.slice.call(root.querySelectorAll(".unit-switch__option"));
+  var numbers = Array.prototype.slice.call(document.querySelectorAll(".num"));
+  var unitLabels = Array.prototype.slice.call(document.querySelectorAll(".unit"));
+  var input = document.getElementById("custom-length");
+  var inputUnit = document.getElementById("custom-unit");
+  var output = document.getElementById("custom-out");
+  var status = document.getElementById("live-status");
+
+  var unit = "mm";
+  var customMm = 120;
+
+  function trim(n) {
+    return Number.parseFloat(n.toFixed(2));
+  }
+
+  function mmToUnit(mm, u) {
+    return u === "in" ? mm / MM_PER_IN : mm;
+  }
+
+  function unitToMm(value, u) {
+    return u === "in" ? value * MM_PER_IN : value;
+  }
+
+  function format(mm, u) {
+    return trim(mmToUnit(mm, u));
+  }
+
+  function otherUnit() {
+    return unit === "mm" ? "in" : "mm";
+  }
+
+  function flip(el, delay) {
+    if (!el) return;
+    el.classList.remove("is-flipping");
+    void el.offsetWidth;
+    el.style.animationDelay = delay + "ms";
+    el.classList.add("is-flipping");
+  }
+
+  function render() {
+    root.dataset.unit = unit;
+    buttons.forEach(function (button) {
+      button.setAttribute("aria-pressed", String(button.dataset.unit === unit));
+    });
+
+    numbers.forEach(function (num, i) {
+      num.textContent = format(Number(num.dataset.mm), unit);
+      flip(num, i * 35);
+    });
+    unitLabels.forEach(function (label, i) {
+      label.textContent = unit;
+      flip(label, i * 35);
+    });
+
+    inputUnit.textContent = unit;
+    input.value = format(customMm, unit);
+    output.innerHTML = "= " + format(customMm, otherUnit()) + " <span>" + otherUnit() + "</span>";
+
+    status.textContent = "Showing dimensions in " + (unit === "mm" ? "millimetres" : "inches") + ".";
+  }
+
+  function setUnit(next) {
+    if (UNITS.indexOf(next) === -1 || next === unit) return;
+    unit = next;
+    try { localStorage.setItem(STORAGE_KEY, unit); } catch (err) { /* storage may be unavailable */ }
+    render();
+  }
+
+  buttons.forEach(function (button) {
+    button.addEventListener("click", function () { setUnit(button.dataset.unit); });
+  });
+
+  root.addEventListener("keydown", function (event) {
+    var index = UNITS.indexOf(unit);
+    var next = null;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") next = UNITS[Math.min(index + 1, UNITS.length - 1)];
+    else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = UNITS[Math.max(index - 1, 0)];
+    else if (event.key === "Home") next = UNITS[0];
+    else if (event.key === "End") next = UNITS[UNITS.length - 1];
+    if (next === null) return;
+    event.preventDefault();
+    setUnit(next);
+    buttons[UNITS.indexOf(unit)].focus();
+  });
+
+  input.addEventListener("input", function () {
+    var parsed = Number.parseFloat(input.value);
+    if (Number.isFinite(parsed)) {
+      customMm = unitToMm(parsed, unit);
+      output.innerHTML = "= " + format(customMm, otherUnit()) + " <span>" + otherUnit() + "</span>";
+    } else {
+      output.textContent = "= —";
+    }
+  });
+
+  try {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (UNITS.indexOf(saved) !== -1) unit = saved;
+  } catch (err) { /* storage may be unavailable */ }
+
+  render();
+})();
+</script>
+</body>
+</html>

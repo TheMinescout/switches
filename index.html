@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Switches — zero-dependency UI toggles by Minescout Studio</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231b1714'/%3E%3Crect x='7' y='12' width='18' height='8' rx='4' fill='none' stroke='%23f7f4ee' stroke-width='2'/%3E%3Ccircle cx='20' cy='16' r='2.6' fill='%23f7f4ee'/%3E%3C/svg%3E">
+<meta name="description" content="Four zero-dependency UI switches in plain HTML, CSS and JavaScript: mm | in units, billing cycle, theme appearance and temperature units.">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f4ee;
+    --surface: #fffdf9;
+    --surface-soft: #f1ece2;
+    --fg: #1b1714;
+    --muted: #6f655a;
+    --border: #e4dccd;
+    --accent: #9a4a2c;
+    --accent-soft: #f3e2d7;
+    --shadow: 0 1px 2px rgb(27 23 20 / 0.05), 0 20px 48px -24px rgb(27 23 20 / 0.28);
+    --radius: 1.25rem;
+    --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    font-family: var(--font);
+    color: var(--fg);
+    background:
+      radial-gradient(1000px 560px at 8% -12%, #fffdf7 0%, transparent 60%),
+      radial-gradient(900px 520px at 104% 4%, #efe4d2 0%, transparent 58%),
+      var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; }
+
+  .wrap { width: min(1120px, 100% - 2.5rem); margin-inline: auto; }
+
+  /* --- Header ----------------------------------------------------------- */
+  .site-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.4rem 0;
+  }
+
+  .brand { display: inline-flex; align-items: center; gap: 0.65rem; text-decoration: none; }
+  .brand__mark {
+    display: grid;
+    place-items: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 0.7rem;
+    background: var(--fg);
+    color: var(--bg);
+    flex: none;
+  }
+  .brand__mark svg { width: 1.15rem; height: 1.15rem; }
+  .brand__name { font-size: 0.95rem; font-weight: 700; letter-spacing: -0.015em; }
+  .brand__sub { display: block; font-size: 0.7rem; font-weight: 500; color: var(--muted); letter-spacing: 0.04em; }
+
+  .head-links { display: flex; align-items: center; gap: 0.4rem; }
+  .head-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 0.8rem;
+    border-radius: 9999px;
+    border: 1px solid transparent;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--muted);
+    transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+  }
+  .head-links a:hover { color: var(--fg); background: var(--surface); border-color: var(--border); }
+
+  /* --- Hero ------------------------------------------------------------- */
+  .hero { padding: clamp(1.5rem, 5vw, 3.5rem) 0 clamp(2rem, 5vw, 3rem); }
+
+  .eyebrow {
+    margin: 0 0 0.9rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  h1 {
+    margin: 0;
+    max-width: 18ch;
+    font-size: clamp(2.3rem, 6.4vw, 4rem);
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    font-weight: 700;
+  }
+
+  h1 em { font-style: normal; color: var(--accent); }
+
+  .hero p {
+    margin: 1.1rem 0 0;
+    max-width: 54ch;
+    font-size: clamp(0.98rem, 1.6vw, 1.08rem);
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .meta { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1.4rem; padding: 0; list-style: none; }
+  .meta li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    background: var(--surface);
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: var(--muted);
+  }
+  .meta li::before { content: ""; width: 0.4rem; height: 0.4rem; border-radius: 50%; background: var(--accent); }
+
+  /* --- Showcase grid ---------------------------------------------------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
+    gap: 1.4rem;
+    padding-bottom: 1rem;
+  }
+
+  .item {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .preview {
+    background: var(--surface-soft);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .preview__bar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    background: #fbf8f2;
+  }
+
+  .preview__dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #d9cfbd; }
+  .preview__dot:nth-child(1) { background: #e6b8a5; }
+  .preview__dot:nth-child(2) { background: #e8d3a8; }
+  .preview__dot:nth-child(3) { background: #c3d4b4; }
+
+  .preview__url {
+    margin-left: 0.45rem;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .preview iframe {
+    display: block;
+    width: 100%;
+    height: 470px;
+    border: 0;
+    background: var(--bg);
+  }
+
+  .item__body { display: flex; flex-direction: column; flex: 1; padding: 1.1rem 1.2rem 1.2rem; }
+
+  .item__head { display: flex; align-items: baseline; gap: 0.55rem; }
+  .item__num { font-family: var(--mono); font-size: 0.72rem; color: var(--accent); }
+  .item__title { margin: 0; font-size: 1.08rem; font-weight: 700; letter-spacing: -0.015em; }
+
+  .item__desc { margin: 0.45rem 0 0; font-size: 0.88rem; line-height: 1.55; color: var(--muted); flex: 1; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0.85rem 0 0; padding: 0; list-style: none; }
+  .tags li {
+    padding: 0.16rem 0.5rem;
+    border-radius: 9999px;
+    background: var(--accent-soft);
+    color: #7c3a20;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .item__links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.52rem 0.9rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--fg);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 120ms ease;
+  }
+
+  .btn:hover { border-color: #cdbfa8; background: #fffefb; }
+  .btn:active { transform: scale(0.98); }
+  .btn--primary { background: var(--fg); border-color: var(--fg); color: var(--bg); }
+  .btn--primary:hover { background: #2a221c; border-color: #2a221c; color: #fffdf9; }
+
+  /* --- How to use strip ------------------------------------------------ */
+  .how {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    gap: 1rem;
+    margin: 2.2rem 0 0;
+    padding: 1.3rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+  .how__step { padding: 0.2rem 0.3rem; }
+  .how__n {
+    display: inline-grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+  .how h3 { margin: 0.55rem 0 0.25rem; font-size: 0.92rem; }
+  .how p { margin: 0; font-size: 0.82rem; line-height: 1.5; color: var(--muted); }
+
+  /* --- Footer ----------------------------------------------------------- */
+  .site-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    margin-top: 3rem;
+    padding: 1.5rem 0 2.2rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.84rem;
+    color: var(--muted);
+  }
+
+  .site-foot p { margin: 0; }
+  .site-foot a { color: var(--fg); font-weight: 600; text-decoration: none; border-bottom: 1px solid var(--border); }
+  .site-foot a:hover { color: var(--accent); border-color: var(--accent); }
+
+  @media (max-width: 620px) {
+    .preview iframe { height: 600px; }
+    .head-links a span { display: none; }
+    .site-head { padding: 1rem 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition-duration: 0.001ms !important; animation-duration: 0.001ms !important; }
+  }
+</style>
+</head>
+<body>
+<header class="wrap site-head">
+  <a class="brand" href="./index.html" aria-label="Minescout switches home">
+    <span class="brand__mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2.5" y="7" width="19" height="10" rx="5"/><circle cx="16" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
+    </span>
+    <span>
+      <span class="brand__name">Minescout switches</span>
+      <span class="brand__sub">Plain HTML, CSS and JS</span>
+    </span>
+  </a>
+  <nav class="head-links" aria-label="Project links">
+    <a href="https://github.com/TheMinescout/switches" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.9 10.9c.6.1.8-.2.8-.6v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.2-1.7-1.2-1.7-1-.7.1-.7.1-.7 1.1.1 1.7 1.1 1.7 1.1 1 1.7 2.6 1.2 3.3.9.1-.7.4-1.2.7-1.5-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .4.2.7.8.6A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
+      <span>GitHub</span>
+    </a>
+    <a href="#switches">Switches</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <section class="hero" aria-labelledby="hero-title">
+    <p class="eyebrow">Open source &middot; MIT</p>
+    <h1 id="hero-title">Four switches.<br><em>Zero dependencies.</em></h1>
+    <p>Drop-in UI toggles built with plain HTML, CSS and JavaScript. Each one ships with a live example and a copy-paste guide, so it works in any site, any framework, or no framework at all.</p>
+    <ul class="meta">
+      <li>4 switches</li>
+      <li>No build step</li>
+      <li>Keyboard accessible</li>
+      <li>Reduced-motion aware</li>
+    </ul>
+  </section>
+
+  <section id="switches" class="grid" aria-label="Switch collection">
+
+    <article class="item">
+      <div class="preview">
+        <div class="preview__bar" aria-hidden="true">
+          <span class="preview__dot"></span><span class="preview__dot"></span><span class="preview__dot"></span>
+          <span class="preview__url">mm-in-unit-switch/example.html</span>
+        </div>
+        <iframe src="mm-in-unit-switch/example.html?embed=1" title="Live preview: mm and inch unit switch" loading="lazy"></iframe>
+      </div>
+      <div class="item__body">
+        <div class="item__head"><span class="item__num">01</span><h2 class="item__title">mm | in unit switch</h2></div>
+        <p class="item__desc">Ported from The Chop Lab. A millimetre / inch toggle that converts sample part dimensions and a free-form length the instant you flip it.</p>
+        <ul class="tags"><li>units</li><li>localStorage</li><li>live conversion</li></ul>
+        <div class="item__links">
+          <a class="btn btn--primary" href="mm-in-unit-switch/example.html">Open live demo</a>
+          <a class="btn" href="mm-in-unit-switch/how-to-add.md">How to add</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="preview">
+        <div class="preview__bar" aria-hidden="true">
+          <span class="preview__dot"></span><span class="preview__dot"></span><span class="preview__dot"></span>
+          <span class="preview__url">billing-cycle-switch/example.html</span>
+        </div>
+        <iframe src="billing-cycle-switch/example.html?embed=1" title="Live preview: monthly and yearly billing switch" loading="lazy"></iframe>
+      </div>
+      <div class="item__body">
+        <div class="item__head"><span class="item__num">02</span><h2 class="item__title">Billing cycle switch</h2></div>
+        <p class="item__desc">Monthly / Yearly with a Save 20% badge. Every plan price updates in place, and yearly mode reveals the real annual total.</p>
+        <ul class="tags"><li>pricing</li><li>annual discount</li><li>live prices</li></ul>
+        <div class="item__links">
+          <a class="btn btn--primary" href="billing-cycle-switch/example.html">Open live demo</a>
+          <a class="btn" href="billing-cycle-switch/how-to-add.md">How to add</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="preview">
+        <div class="preview__bar" aria-hidden="true">
+          <span class="preview__dot"></span><span class="preview__dot"></span><span class="preview__dot"></span>
+          <span class="preview__url">theme-appearance-switch/example.html</span>
+        </div>
+        <iframe src="theme-appearance-switch/example.html?embed=1" title="Live preview: light, dark and system theme switch" loading="lazy"></iframe>
+      </div>
+      <div class="item__body">
+        <div class="item__head"><span class="item__num">03</span><h2 class="item__title">Theme appearance switch</h2></div>
+        <p class="item__desc">A tactile Light / Dark / System pill with a springy thumb. Drives CSS variables on the whole page and remembers the choice.</p>
+        <ul class="tags"><li>dark mode</li><li>prefers-color-scheme</li><li>localStorage</li></ul>
+        <div class="item__links">
+          <a class="btn btn--primary" href="theme-appearance-switch/example.html">Open live demo</a>
+          <a class="btn" href="theme-appearance-switch/how-to-add.md">How to add</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="preview">
+        <div class="preview__bar" aria-hidden="true">
+          <span class="preview__dot"></span><span class="preview__dot"></span><span class="preview__dot"></span>
+          <span class="preview__url">temperature-unit-switch/example.html</span>
+        </div>
+        <iframe src="temperature-unit-switch/example.html?embed=1" title="Live preview: Fahrenheit and Celsius temperature switch" loading="lazy"></iframe>
+      </div>
+      <div class="item__body">
+        <div class="item__head"><span class="item__num">04</span><h2 class="item__title">Temperature unit switch</h2></div>
+        <p class="item__desc">A °F / °C switch wired to a live slider. Drag the temperature or jump to a sample and every readout converts instantly.</p>
+        <ul class="tags"><li>units</li><li>range slider</li><li>live conversion</li></ul>
+        <div class="item__links">
+          <a class="btn btn--primary" href="temperature-unit-switch/example.html">Open live demo</a>
+          <a class="btn" href="temperature-unit-switch/how-to-add.md">How to add</a>
+        </div>
+      </div>
+    </article>
+
+  </section>
+
+  <section class="how" aria-label="How to use a switch">
+    <div class="how__step">
+      <span class="how__n">1</span>
+      <h3>Open an example</h3>
+      <p>Every folder has a self-contained <code>example.html</code>. View source and take what you need.</p>
+    </div>
+    <div class="how__step">
+      <span class="how__n">2</span>
+      <h3>Copy three blocks</h3>
+      <p>Markup, CSS and a small script. No packages, no bundler, no build step.</p>
+    </div>
+    <div class="how__step">
+      <span class="how__n">3</span>
+      <h3>Make it yours</h3>
+      <p>Each <code>how-to-add.md</code> lists the colours, labels, keys and timings you can change.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap site-foot">
+  <p>Built by <a href="https://minescout.net/studio" target="_blank" rel="noopener">Minescout Studio</a> &middot; MIT licensed</p>
+  <p><a href="https://github.com/TheMinescout/switches" target="_blank" rel="noopener">Source on GitHub</a></p>
+</footer>
+</body>
+</html>
