@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-choice="system">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Theme appearance switch — live example</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231b1714'/%3E%3Crect x='7' y='12' width='18' height='8' rx='4' fill='none' stroke='%23f7f4ee' stroke-width='2'/%3E%3Ccircle cx='20' cy='16' r='2.6' fill='%23f7f4ee'/%3E%3C/svg%3E">
+<meta name="description" content="A zero-dependency Light / Dark / System theme switch with localStorage persistence.">
+<script>
+  // Apply the stored theme before first paint so the page never flashes light.
+  (function () {
+    var saved = null;
+    try { saved = localStorage.getItem("theme-appearance-switch"); } catch (err) {}
+    var system = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    document.documentElement.dataset.theme = saved === "light" || saved === "dark" ? saved : system;
+  })();
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f6f5f2;
+    --glow-1: #ffffff;
+    --glow-2: #e8e5ff;
+    --surface: #fffdfa;
+    --surface-soft: #f3f1ec;
+    --fg: #1c1917;
+    --muted: #78716c;
+    --border: #e7e2d9;
+    --accent: #4f46e5;
+    --accent-strong: #3730a3;
+    --accent-soft: #eef2ff;
+    --track: #eae7e0;
+    --shadow-card: 0 1px 2px rgb(28 25 23 / 0.05), 0 18px 40px -22px rgb(28 25 23 / 0.3);
+    --shadow-lift: 0 0 0 1px rgb(28 25 23 / 0.06), 0 1px 2px rgb(28 25 23 / 0.08), 0 4px 10px -3px rgb(28 25 23 / 0.12);
+    --shadow-press: inset 0 1px 2px rgb(28 25 23 / 0.12), inset 0 0 0 1px rgb(28 25 23 / 0.04);
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+    --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0c0a09;
+    --glow-1: #1c1917;
+    --glow-2: #1e1b4b;
+    --surface: #1c1917;
+    --surface-soft: #171412;
+    --fg: #fafaf9;
+    --muted: #a8a29e;
+    --border: #2c2724;
+    --accent: #a5b4fc;
+    --accent-strong: #c7d2fe;
+    --accent-soft: #312e81;
+    --track: #292524;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 20px 44px -24px rgb(0 0 0 / 0.9);
+    --shadow-lift: 0 0 0 1px rgb(255 255 255 / 0.06), 0 1px 2px rgb(0 0 0 / 0.5), 0 4px 10px -3px rgb(0 0 0 / 0.6);
+    --shadow-press: inset 0 1px 2px rgb(0 0 0 / 0.5), inset 0 0 0 1px rgb(255 255 255 / 0.04);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: clamp(1.25rem, 4vw, 3rem);
+    font-family: var(--font);
+    color: var(--fg);
+    background:
+      radial-gradient(820px 480px at 10% -10%, var(--glow-1) 0%, transparent 58%),
+      radial-gradient(760px 440px at 105% 108%, var(--glow-2) 0%, transparent 55%),
+      var(--bg);
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 320ms ease, color 220ms ease;
+  }
+
+  .demo { width: min(660px, 100%); }
+
+  .eyebrow {
+    margin: 0 0 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(1.9rem, 5vw, 2.6rem);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+  }
+
+  .lede {
+    margin: 0.6rem 0 1.5rem;
+    max-width: 46ch;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 1.25rem;
+    padding: clamp(1.1rem, 3vw, 1.5rem);
+    box-shadow: var(--shadow-card);
+    transition: background-color 320ms ease, border-color 320ms ease, box-shadow 320ms ease;
+  }
+
+  .card__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.9rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .card__title { margin: 0; font-size: 1.02rem; font-weight: 700; letter-spacing: -0.01em; }
+  .card__sub { margin: 0.25rem 0 0; font-size: 0.82rem; color: var(--muted); }
+
+  /* --- The switch ------------------------------------------------------- */
+  .theme-switch {
+    position: relative;
+    display: inline-grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: center;
+    height: 2.5rem;
+    padding: 0.22rem;
+    border-radius: 9999px;
+    background: var(--track);
+    box-shadow: var(--shadow-press);
+    transition: background-color 300ms ease;
+  }
+
+  .theme-switch__thumb {
+    position: absolute;
+    top: 0.22rem;
+    bottom: 0.22rem;
+    left: 0.22rem;
+    width: calc((100% - 0.44rem) / 3);
+    border-radius: 9999px;
+    background: var(--surface);
+    box-shadow: var(--shadow-lift);
+    transition: transform 340ms var(--spring), background-color 300ms ease;
+  }
+
+  .theme-switch[data-choice="light"] .theme-switch__thumb { transform: translateX(0); }
+  .theme-switch[data-choice="dark"] .theme-switch__thumb { transform: translateX(100%); }
+  .theme-switch[data-choice="system"] .theme-switch__thumb { transform: translateX(200%); }
+
+  .theme-switch__option {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    height: 100%;
+    padding: 0 0.6rem;
+    border: 0;
+    border-radius: 9999px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 180ms ease, transform 120ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .theme-switch__option:hover { color: var(--fg); }
+  .theme-switch__option:active { transform: scale(0.94); }
+  .theme-switch__option[aria-pressed="true"] { color: var(--fg); }
+  .theme-switch__option:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .theme-switch__option svg { width: 0.95rem; height: 0.95rem; flex: none; }
+
+  /* --- Live preview panel ----------------------------------------------- */
+  .panel {
+    border: 1px solid var(--border);
+    border-radius: 0.9rem;
+    background: var(--surface-soft);
+    overflow: hidden;
+    transition: background-color 320ms ease, border-color 320ms ease;
+  }
+
+  .panel__bar {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .panel__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+    transition: background-color 300ms ease, box-shadow 300ms ease;
+  }
+
+  .panel__body { padding: 0.95rem; }
+
+  .panel__body h3 { margin: 0; font-size: 1.05rem; letter-spacing: -0.015em; }
+  .panel__body p { margin: 0.3rem 0 0.85rem; font-size: 0.84rem; line-height: 1.5; color: var(--muted); }
+
+  .swatches { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.9rem; }
+
+  .swatch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.55rem 0.25rem 0.3rem;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    background: var(--surface);
+    font-size: 0.7rem;
+    color: var(--muted);
+    transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease;
+  }
+
+  .swatch::before {
+    content: "";
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: var(--chip, var(--accent));
+    border: 1px solid rgb(0 0 0 / 0.12);
+  }
+
+  .bars {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    align-items: end;
+    gap: 0.45rem;
+    height: 4.2rem;
+    padding: 0.5rem 0.55rem;
+    border: 1px solid var(--border);
+    border-radius: 0.7rem;
+    background: var(--surface);
+    transition: background-color 300ms ease, border-color 300ms ease;
+  }
+
+  .bars span {
+    display: block;
+    border-radius: 0.3rem 0.3rem 0.15rem 0.15rem;
+    background: var(--bar, var(--accent));
+    opacity: 0.9;
+    height: var(--h);
+    transition: background-color 300ms ease;
+  }
+
+  .readout {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.6rem;
+    margin: 0.85rem 0 0;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .readout code {
+    padding: 0.12rem 0.4rem;
+    border-radius: 0.35rem;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    transition: background-color 300ms ease, color 300ms ease;
+  }
+
+  .foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-top: 1.1rem;
+    font-size: 0.82rem;
+  }
+
+  .foot a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--border); padding-bottom: 1px; }
+  .foot a:hover { color: var(--accent); border-color: var(--accent); }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px; height: 1px;
+    margin: -1px; padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Embedded preview mode used by the root showcase. */
+  html.is-embedded body { padding: 1.25rem; }
+  html.is-embedded .eyebrow,
+  html.is-embedded h1,
+  html.is-embedded .lede,
+  html.is-embedded .foot { display: none; }
+
+  @media (max-width: 520px) {
+    .theme-switch { width: 100%; }
+    .theme-switch__option { padding: 0 0.4rem; font-size: 0.76rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+<main class="demo">
+  <p class="eyebrow">Minescout switches &middot; 03 / 04</p>
+  <h1>Theme appearance</h1>
+  <p class="lede">A tactile three-way segmented pill. Light and Dark are explicit choices, System follows the visitor's operating system and updates live.</p>
+
+  <section class="card" data-preview aria-labelledby="card-title">
+    <div class="card__top">
+      <div>
+        <h2 class="card__title" id="card-title">Appearance</h2>
+        <p class="card__sub">Saved in this browser.</p>
+      </div>
+
+      <div class="theme-switch" id="theme-switch" role="group" aria-label="Theme appearance" data-choice="system">
+        <span class="theme-switch__thumb" aria-hidden="true"></span>
+        <button class="theme-switch__option" type="button" data-choice="light" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          Light
+        </button>
+        <button class="theme-switch__option" type="button" data-choice="dark" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5Z"/></svg>
+          Dark
+        </button>
+        <button class="theme-switch__option" type="button" data-choice="system" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+          System
+        </button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel__bar"><span class="panel__dot" aria-hidden="true"></span> Live preview</div>
+      <div class="panel__body">
+        <h3>Studio dashboard</h3>
+        <p>Every surface, border and label below is driven by CSS variables, so the whole page changes at once.</p>
+
+        <div class="swatches" aria-hidden="true">
+          <span class="swatch" style="--chip:#4f46e5">Accent</span>
+          <span class="swatch" style="--chip:#0f766e">Success</span>
+          <span class="swatch" style="--chip:#d97706">Warning</span>
+          <span class="swatch" style="--chip:#e11d48">Alert</span>
+        </div>
+
+        <div class="bars" aria-hidden="true">
+          <span style="--h:38%; --bar:#4f46e5"></span>
+          <span style="--h:64%; --bar:#6366f1"></span>
+          <span style="--h:52%; --bar:#818cf8"></span>
+          <span style="--h:82%; --bar:#a5b4fc"></span>
+        </div>
+      </div>
+    </div>
+
+    <p class="readout">
+      Choice <code id="choice-label">system</code>
+      Resolved <code id="resolved-label">light</code>
+      <span id="storage-label">Stored with localStorage</span>
+    </p>
+
+    <p class="visually-hidden" role="status" aria-live="polite" id="live-status">Theme set to system.</p>
+  </section>
+
+  <nav class="foot" aria-label="Switch links">
+    <a href="../index.html">&larr; All switches</a>
+    <a href="how-to-add.md">How to add this switch &rarr;</a>
+  </nav>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  if (new URLSearchParams(window.location.search).has("embed")) {
+    document.documentElement.classList.add("is-embedded");
+  }
+
+  var STORAGE_KEY = "theme-appearance-switch";
+  var CHOICES = ["light", "dark", "system"];
+  var media = window.matchMedia("(prefers-color-scheme: dark)");
+
+  var root = document.getElementById("theme-switch");
+  var buttons = Array.prototype.slice.call(root.querySelectorAll(".theme-switch__option"));
+  var choiceLabel = document.getElementById("choice-label");
+  var resolvedLabel = document.getElementById("resolved-label");
+  var storageLabel = document.getElementById("storage-label");
+  var status = document.getElementById("live-status");
+
+  var choice = "system";
+
+  function resolved() {
+    return choice === "system" ? (media.matches ? "dark" : "light") : choice;
+  }
+
+  function render() {
+    var theme = resolved();
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.choice = choice;
+
+    root.dataset.choice = choice;
+    buttons.forEach(function (button) {
+      button.setAttribute("aria-pressed", String(button.dataset.choice === choice));
+    });
+
+    choiceLabel.textContent = choice;
+    resolvedLabel.textContent = theme;
+    status.textContent = "Theme set to " + choice + (choice === "system" ? ", currently " + theme : "") + ".";
+  }
+
+  function setChoice(next) {
+    if (CHOICES.indexOf(next) === -1 || next === choice) return;
+    choice = next;
+    try {
+      localStorage.setItem(STORAGE_KEY, choice);
+      storageLabel.textContent = "Stored with localStorage";
+    } catch (err) {
+      storageLabel.textContent = "Storage unavailable — lasts this visit";
+    }
+    render();
+  }
+
+  buttons.forEach(function (button) {
+    button.addEventListener("click", function () { setChoice(button.dataset.choice); });
+  });
+
+  root.addEventListener("keydown", function (event) {
+    var index = CHOICES.indexOf(choice);
+    var next = null;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") next = CHOICES[Math.min(index + 1, CHOICES.length - 1)];
+    else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = CHOICES[Math.max(index - 1, 0)];
+    else if (event.key === "Home") next = CHOICES[0];
+    else if (event.key === "End") next = CHOICES[CHOICES.length - 1];
+    if (next === null) return;
+    event.preventDefault();
+    setChoice(next);
+    buttons[CHOICES.indexOf(choice)].focus();
+  });
+
+  try {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (CHOICES.indexOf(saved) !== -1) choice = saved;
+  } catch (err) {
+    storageLabel.textContent = "Storage unavailable — lasts this visit";
+  }
+
+  if (typeof media.addEventListener === "function") {
+    media.addEventListener("change", render);
+  } else if (typeof media.addListener === "function") {
+    media.addListener(render);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
