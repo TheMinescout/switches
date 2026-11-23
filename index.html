@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Switches — zero-dependency UI toggles by Minescout Studio</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231b1714'/%3E%3Crect x='7' y='12' width='18' height='8' rx='4' fill='none' stroke='%23f7f4ee' stroke-width='2'/%3E%3Ccircle cx='20' cy='16' r='2.6' fill='%23f7f4ee'/%3E%3C/svg%3E">
-<meta name="description" content="Four zero-dependency UI switches in plain HTML, CSS and JavaScript: mm | in units, billing cycle, theme appearance and temperature units.">
+<meta name="description" content="Ten zero-dependency UI switches in plain HTML, CSS and JavaScript: units, pricing, theme, currency, weight, notifications, consent, status and density.">
 <style>
   :root {
     color-scheme: light;
@@ -306,10 +306,10 @@
 <main class="wrap">
   <section class="hero" aria-labelledby="hero-title">
     <p class="eyebrow">Open source &middot; MIT</p>
-    <h1 id="hero-title">Four switches.<br><em>Zero dependencies.</em></h1>
+    <h1 id="hero-title">Ten switches.<br><em>Zero dependencies.</em></h1>
     <p>Drop-in UI toggles built with plain HTML, CSS and JavaScript. Each one ships with a live example and a copy-paste guide, so it works in any site, any framework, or no framework at all.</p>
     <ul class="meta">
-      <li>4 switches</li>
+      <li>10 switches</li>
       <li>No build step</li>
       <li>Keyboard accessible</li>
       <li>Reduced-motion aware</li>
@@ -390,6 +390,120 @@
         <div class="item__links">
           <a class="btn btn--primary" href="temperature-unit-switch/example.html">Open live demo</a>
           <a class="btn" href="temperature-unit-switch/how-to-add.md">How to add</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="preview">
+        <div class="preview__bar" aria-hidden="true">
+          <span class="preview__dot"></span><span class="preview__dot"></span><span class="preview__dot"></span>
+          <span class="preview__url">currency-unit-switch/example.html</span>
+        </div>
+        <iframe src="currency-unit-switch/example.html?embed=1" title="Live preview: US dollar, euro and pound currency switch" loading="lazy"></iframe>
+      </div>
+      <div class="item__body">
+        <div class="item__head"><span class="item__num">05</span><h2 class="item__title">Currency unit switch</h2></div>
+        <p class="item__desc">A USD / EUR / GBP pill that converts every sample price live. The symbol follows the choice, and the pick is remembered.</p>
+        <ul class="tags"><li>currency</li><li>live conversion</li><li>localStorage</li></ul>
+        <div class="item__links">
+          <a class="btn btn--primary" href="currency-unit-switch/example.html">Open live demo</a>
+          <a class="btn" href="currency-unit-switch/how-to-add.md">How to add</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="preview">
+        <div class="preview__bar" aria-hidden="true">
+          <span class="preview__dot"></span><span class="preview__dot"></span><span class="preview__dot"></span>
+          <span class="preview__url">weight-unit-switch/example.html</span>
+        </div>
+        <iframe src="weight-unit-switch/example.html?embed=1" title="Live preview: grams and ounces weight switch" loading="lazy"></iframe>
+      </div>
+      <div class="item__body">
+        <div class="item__head"><span class="item__num">06</span><h2 class="item__title">Weight unit switch</h2></div>
+        <p class="item__desc">A g / oz mass toggle for recipes and shipping labels. Weights stay canonical in grams, and the choice persists across visits.</p>
+        <ul class="tags"><li>units</li><li>localStorage</li><li>live conversion</li></ul>
+        <div class="item__links">
+          <a class="btn btn--primary" href="weight-unit-switch/example.html">Open live demo</a>
+          <a class="btn" href="weight-unit-switch/how-to-add.md">How to add</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="preview">
+        <div class="preview__bar" aria-hidden="true">
+          <span class="preview__dot"></span><span class="preview__dot"></span><span class="preview__dot"></span>
+          <span class="preview__url">notification-cadence-switch/example.html</span>
+        </div>
+        <iframe src="notification-cadence-switch/example.html?embed=1" title="Live preview: instant, daily and off notification switch" loading="lazy"></iframe>
+      </div>
+      <div class="item__body">
+        <div class="item__head"><span class="item__num">07</span><h2 class="item__title">Notification cadence switch</h2></div>
+        <p class="item__desc">An Instant / Daily / Off segmented pill that previews the active alert behaviour, so nobody has to guess what a setting does.</p>
+        <ul class="tags"><li>notifications</li><li>digest</li><li>preferences</li></ul>
+        <div class="item__links">
+          <a class="btn btn--primary" href="notification-cadence-switch/example.html">Open live demo</a>
+          <a class="btn" href="notification-cadence-switch/how-to-add.md">How to add</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="preview">
+        <div class="preview__bar" aria-hidden="true">
+          <span class="preview__dot"></span><span class="preview__dot"></span><span class="preview__dot"></span>
+          <span class="preview__url">privacy-consent-switch/example.html</span>
+        </div>
+        <iframe src="privacy-consent-switch/example.html?embed=1" title="Live preview: essential and analytics consent switch" loading="lazy"></iframe>
+      </div>
+      <div class="item__body">
+        <div class="item__head"><span class="item__num">08</span><h2 class="item__title">Privacy consent switch</h2></div>
+        <p class="item__desc">An Essential / Analytics consent toggle with a plain-language summary. No dark patterns, and the analytics row changes with the choice.</p>
+        <ul class="tags"><li>privacy</li><li>consent</li><li>gdpr</li></ul>
+        <div class="item__links">
+          <a class="btn btn--primary" href="privacy-consent-switch/example.html">Open live demo</a>
+          <a class="btn" href="privacy-consent-switch/how-to-add.md">How to add</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="preview">
+        <div class="preview__bar" aria-hidden="true">
+          <span class="preview__dot"></span><span class="preview__dot"></span><span class="preview__dot"></span>
+          <span class="preview__url">availability-status-switch/example.html</span>
+        </div>
+        <iframe src="availability-status-switch/example.html?embed=1" title="Live preview: available and booked studio status switch" loading="lazy"></iframe>
+      </div>
+      <div class="item__body">
+        <div class="item__head"><span class="item__num">09</span><h2 class="item__title">Availability status switch</h2></div>
+        <p class="item__desc">An Available / Booked studio badge for freelancer headers. The badge, dot colour and note all change together.</p>
+        <ul class="tags"><li>status</li><li>freelance</li><li>header</li></ul>
+        <div class="item__links">
+          <a class="btn btn--primary" href="availability-status-switch/example.html">Open live demo</a>
+          <a class="btn" href="availability-status-switch/how-to-add.md">How to add</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="item">
+      <div class="preview">
+        <div class="preview__bar" aria-hidden="true">
+          <span class="preview__dot"></span><span class="preview__dot"></span><span class="preview__dot"></span>
+          <span class="preview__url">view-density-switch/example.html</span>
+        </div>
+        <iframe src="view-density-switch/example.html?embed=1" title="Live preview: comfortable and compact view density switch" loading="lazy"></iframe>
+      </div>
+      <div class="item__body">
+        <div class="item__head"><span class="item__num">10</span><h2 class="item__title">View density switch</h2></div>
+        <p class="item__desc">A Comfortable / Compact control for dense dashboards. It re-spaces the grid, tightens card padding and hides excerpts.</p>
+        <ul class="tags"><li>layout</li><li>density</li><li>cards</li></ul>
+        <div class="item__links">
+          <a class="btn btn--primary" href="view-density-switch/example.html">Open live demo</a>
+          <a class="btn" href="view-density-switch/how-to-add.md">How to add</a>
         </div>
       </div>
     </article>

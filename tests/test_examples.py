@@ -11,8 +11,11 @@ errors, no horizontal overflow, correct conversions, persistence and previews.
 
 from __future__ import annotations
 
+import json
 import os
 import re
+import subprocess
+import sys
 import threading
 import unittest
 from functools import partial
@@ -30,7 +33,15 @@ SWITCHES = [
     "billing-cycle-switch",
     "theme-appearance-switch",
     "temperature-unit-switch",
+    "currency-unit-switch",
+    "weight-unit-switch",
+    "notification-cadence-switch",
+    "privacy-consent-switch",
+    "availability-status-switch",
+    "view-density-switch",
 ]
+
+MANIFEST = ROOT / "switches.json"
 
 VIEWPORTS = [
     ("desktop", 1280, 800),
@@ -326,6 +337,238 @@ class SwitchCollectionTest(unittest.TestCase):
         self.assertIn("212", self.page.locator("#readout-alt").inner_text())
         self.assert_clean("temperature-unit-switch slider")
 
+    # --- Currency --------------------------------------------------------
+
+    def test_currency_switch_converts_and_persists(self):
+        self.open("currency-unit-switch/example.html")
+        self.assertEqual(self.page.locator(".amount").first.inner_text(), "48")
+        self.assertEqual(self.page.locator(".currency-symbol").first.inner_text(), "$")
+
+        self.page.locator(".currency-switch__option[data-currency='eur']").click()
+        self.page.wait_for_timeout(450)
+        self.assertEqual(self.page.locator(".amount").first.inner_text(), "44.16")
+        self.assertEqual(self.page.locator(".currency-symbol").first.inner_text(), "€")
+        self.assertIn("euros", self.page.locator("#rate-note").inner_text())
+        self.assertEqual(
+            self.page.locator(".currency-switch").get_attribute("data-currency"), "eur"
+        )
+        self.assertEqual(
+            self.page.locator(".currency-switch__option[data-currency='eur']").get_attribute(
+                "aria-pressed"
+            ),
+            "true",
+        )
+        self.assertEqual(self.page.evaluate("localStorage.getItem('currency-unit-switch')"), "eur")
+
+        self.page.reload(wait_until="load")
+        self.page.wait_for_timeout(300)
+        self.assertEqual(self.page.locator(".amount").first.inner_text(), "44.16")
+
+        self.page.locator(".currency-switch__option[data-currency='gbp']").click()
+        self.page.wait_for_timeout(400)
+        self.assertEqual(self.page.locator(".amount").first.inner_text(), "37.92")
+        self.assertEqual(self.page.locator(".currency-symbol").first.inner_text(), "£")
+
+        self.page.locator(".currency-switch__option[data-currency='usd']").click()
+        self.page.wait_for_timeout(400)
+        self.assertEqual(self.page.locator(".amount").first.inner_text(), "48")
+        self.assert_clean("currency-unit-switch")
+
+    # --- Weight ----------------------------------------------------------
+
+    def test_weight_switch_converts_and_persists(self):
+        self.open("weight-unit-switch/example.html")
+        self.assertEqual(self.page.locator(".num").first.inner_text(), "250")
+        self.assertEqual(self.page.locator(".unit").first.inner_text(), "g")
+
+        self.page.locator(".weight-switch__option[data-unit='oz']").click()
+        self.page.wait_for_timeout(450)
+        self.assertEqual(self.page.locator(".num").first.inner_text(), "8.82")
+        self.assertEqual(self.page.locator(".unit").first.inner_text(), "oz")
+        self.assertEqual(self.page.evaluate("localStorage.getItem('weight-unit-switch')"), "oz")
+
+        self.page.reload(wait_until="load")
+        self.page.wait_for_timeout(300)
+        self.assertEqual(self.page.locator(".num").first.inner_text(), "8.82")
+
+        self.page.locator(".weight-switch__option[data-unit='g']").click()
+        self.page.wait_for_timeout(400)
+        self.page.locator("#custom-weight").fill("100")
+        self.page.wait_for_timeout(200)
+        self.assertIn("3.53", self.page.locator("#custom-out").inner_text())
+        self.assertIn("oz", self.page.locator("#custom-out").inner_text())
+        self.assert_clean("weight-unit-switch")
+
+    # --- Notification cadence --------------------------------------------
+
+    def test_notification_switch_changes_behavior_and_persists(self):
+        self.open("notification-cadence-switch/example.html")
+        self.assertEqual(self.page.locator("#behavior-title").inner_text(), "Real-time alerts")
+
+        self.page.locator(".cadence-switch__option[data-cadence='daily']").click()
+        self.page.wait_for_timeout(400)
+        self.assertEqual(self.page.locator("#behavior-title").inner_text(), "Daily digest")
+        self.assertIn("8:00", self.page.locator("#behavior-text").inner_text())
+        self.assertIn("Email only", self.page.locator("#behavior-meta").inner_text())
+        self.assertEqual(
+            self.page.locator(".cadence-switch").get_attribute("data-cadence"), "daily"
+        )
+        self.assertEqual(
+            self.page.evaluate("localStorage.getItem('notification-cadence-switch')"), "daily"
+        )
+
+        self.page.reload(wait_until="load")
+        self.page.wait_for_timeout(300)
+        self.assertEqual(self.page.locator("#behavior-title").inner_text(), "Daily digest")
+
+        self.page.locator(".cadence-switch__option[data-cadence='off']").click()
+        self.page.wait_for_timeout(400)
+        self.assertEqual(self.page.locator("#behavior-title").inner_text(), "Notifications paused")
+        self.assertEqual(self.page.locator("#behavior").get_attribute("data-mode"), "off")
+        self.assert_clean("notification-cadence-switch")
+
+    # --- Privacy consent -------------------------------------------------
+
+    def test_privacy_switch_updates_summary_and_persists(self):
+        self.open("privacy-consent-switch/example.html")
+        self.assertIn("Essential only", self.page.locator("#consent-summary").inner_text())
+        self.assertEqual(self.page.locator("#analytics-state").text_content().strip(), "Off")
+
+        self.page.locator(".consent-switch__option[data-consent='analytics']").click()
+        self.page.wait_for_timeout(400)
+        self.assertIn("Analytics on", self.page.locator("#consent-summary").inner_text())
+        self.assertEqual(self.page.locator("#analytics-state").text_content().strip(), "On")
+        self.assertEqual(self.page.locator("#analytics-row").get_attribute("data-state"), "on")
+        self.assertEqual(
+            self.page.locator(".consent-switch__option[data-consent='analytics']").get_attribute(
+                "aria-pressed"
+            ),
+            "true",
+        )
+        self.assertEqual(
+            self.page.evaluate("localStorage.getItem('privacy-consent-switch')"), "analytics"
+        )
+
+        self.page.reload(wait_until="load")
+        self.page.wait_for_timeout(300)
+        self.assertEqual(self.page.locator("#analytics-state").text_content().strip(), "On")
+
+        self.page.locator(".consent-switch__option[data-consent='essential']").click()
+        self.page.wait_for_timeout(400)
+        self.assertEqual(self.page.locator("#analytics-state").text_content().strip(), "Off")
+        self.assertIn("Essential only", self.page.locator("#consent-summary").inner_text())
+        self.assert_clean("privacy-consent-switch")
+
+    # --- Availability status ---------------------------------------------
+
+    def test_availability_switch_updates_badge_and_persists(self):
+        self.open("availability-status-switch/example.html")
+        self.assertEqual(self.page.locator("#status-text").inner_text(), "Available for work")
+        self.assertEqual(self.page.locator("#status-badge").get_attribute("data-status"), "available")
+
+        self.page.locator(".status-switch__option[data-status='booked']").click()
+        self.page.wait_for_timeout(400)
+        self.assertEqual(self.page.locator("#status-text").inner_text(), "Booked until March")
+        self.assertEqual(self.page.locator("#status-badge").get_attribute("data-status"), "booked")
+        self.assertIn("Fully booked", self.page.locator("#status-note").inner_text())
+        self.assertEqual(
+            self.page.evaluate("localStorage.getItem('availability-status-switch')"), "booked"
+        )
+
+        self.page.reload(wait_until="load")
+        self.page.wait_for_timeout(300)
+        self.assertEqual(self.page.locator("#status-text").inner_text(), "Booked until March")
+
+        self.page.locator(".status-switch__option[data-status='available']").click()
+        self.page.wait_for_timeout(400)
+        self.assertEqual(self.page.locator("#status-text").inner_text(), "Available for work")
+        self.assert_clean("availability-status-switch")
+
+    # --- View density ----------------------------------------------------
+
+    def test_density_switch_changes_spacing_and_persists(self):
+        self.open("view-density-switch/example.html")
+        grid = self.page.locator("#card-grid")
+        self.assertEqual(grid.get_attribute("data-density"), "comfortable")
+        comfortable_gap = grid.evaluate("el => getComputedStyle(el).gap")
+        self.assertEqual(comfortable_gap, "16px")
+        self.assertTrue(self.page.locator(".project-card__excerpt").first.is_visible())
+
+        self.page.locator(".density-switch__option[data-density='compact']").click()
+        self.page.wait_for_timeout(450)
+        self.assertEqual(grid.get_attribute("data-density"), "compact")
+        compact_gap = grid.evaluate("el => getComputedStyle(el).gap")
+        self.assertEqual(compact_gap, "7.2px")
+        self.assertIn("Compact spacing", self.page.locator("#density-summary").inner_text())
+        self.assertFalse(self.page.locator(".project-card__excerpt").first.is_visible())
+        self.assertEqual(
+            self.page.evaluate("localStorage.getItem('view-density-switch')"), "compact"
+        )
+
+        self.page.reload(wait_until="load")
+        self.page.wait_for_timeout(300)
+        self.assertEqual(grid.get_attribute("data-density"), "compact")
+
+        self.page.locator(".density-switch__option[data-density='comfortable']").click()
+        self.page.wait_for_timeout(450)
+        self.assertEqual(grid.get_attribute("data-density"), "comfortable")
+        self.assert_clean("view-density-switch")
+
+    # --- Manifest and README sync ---------------------------------------
+
+    def test_manifest_matches_switch_folders(self):
+        data = json.loads(MANIFEST.read_text())
+        switches = data["switches"]
+        self.assertEqual([switch["slug"] for switch in switches], SWITCHES)
+        self.assertEqual(len(switches), 10)
+        categories = {category["id"] for category in data["categories"]}
+
+        for index, switch in enumerate(switches, start=1):
+            with self.subTest(slug=switch["slug"]):
+                self.assertEqual(switch["number"], f"{index:02d}")
+                self.assertIn(switch["category"], categories)
+                self.assertIn(switch["options"], (2, 3))
+                self.assertIsInstance(switch["tags"], list)
+                self.assertTrue(switch["tags"])
+                self.assertTrue(switch["anchor"])
+                self.assertTrue(switch["quiz"]["detail"])
+                self.assertTrue((ROOT / switch["slug"] / "example.html").is_file())
+                self.assertTrue((ROOT / switch["slug"] / "how-to-add.md").is_file())
+
+    def test_readme_is_in_sync_with_manifest(self):
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "sync_readme.py"), "--check"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+        readme = (ROOT / "README.md").read_text()
+        data = json.loads(MANIFEST.read_text())
+        self.assertIn("<!-- AUTO-GENERATED:SWITCH-TABLE START -->", readme)
+        self.assertIn("<!-- AUTO-GENERATED:SWITCH-FINDER START -->", readme)
+        self.assertIn("<!-- AUTO-GENERATED -->", readme)
+        self.assertIn("<details>", readme)
+        self.assertIn(data["site"]["request_url"], readme)
+        for switch in data["switches"]:
+            with self.subTest(slug=switch["slug"]):
+                self.assertIn(f"## {switch['number']}. {switch['name']}", readme)
+                self.assertIn(f"(#{switch['anchor']})", readme)
+                self.assertIn(f"[How to add it]({switch['slug']}/how-to-add.md)", readme)
+                self.assertIn(
+                    f"[Live demo]({data['site']['demo_base']}/{switch['slug']}/example.html)",
+                    readme,
+                )
+
+    def test_public_files_do_not_name_the_agent(self):
+        paths = [ROOT / "README.md", ROOT / "index.html", MANIFEST]
+        paths += [ROOT / slug / "how-to-add.md" for slug in SWITCHES]
+        paths += [ROOT / slug / "example.html" for slug in SWITCHES]
+        for path in paths:
+            with self.subTest(path=str(path.relative_to(ROOT))):
+                self.assertNotIn("@openhands", path.read_text().lower())
+
     # --- Previews --------------------------------------------------------
 
     def test_previews_exist_and_are_animated(self):
@@ -347,6 +590,12 @@ class SwitchCollectionTest(unittest.TestCase):
             "billing-cycle-switch": "cycle-switch",
             "theme-appearance-switch": "theme-switch",
             "temperature-unit-switch": "temp-switch",
+            "currency-unit-switch": "currency-switch",
+            "weight-unit-switch": "weight-switch",
+            "notification-cadence-switch": "cadence-switch",
+            "privacy-consent-switch": "consent-switch",
+            "availability-status-switch": "status-switch",
+            "view-density-switch": "density-switch",
         }
         checks = {
             "mm-in-unit-switch": (
@@ -366,6 +615,34 @@ class SwitchCollectionTest(unittest.TestCase):
             "temperature-unit-switch": (
                 ".temp-switch__option[data-unit='f']",
                 lambda page: self.assertEqual(page.locator("#readout-value").inner_text(), "356"),
+            ),
+            "currency-unit-switch": (
+                ".currency-switch__option[data-currency='eur']",
+                lambda page: self.assertEqual(page.locator(".amount").first.inner_text(), "44.16"),
+            ),
+            "weight-unit-switch": (
+                ".weight-switch__option[data-unit='oz']",
+                lambda page: self.assertEqual(page.locator(".num").first.inner_text(), "8.82"),
+            ),
+            "notification-cadence-switch": (
+                ".cadence-switch__option[data-cadence='daily']",
+                lambda page: self.assertEqual(page.locator("#behavior-title").inner_text(), "Daily digest"),
+            ),
+            "privacy-consent-switch": (
+                ".consent-switch__option[data-consent='analytics']",
+                lambda page: self.assertIn(
+                    "Analytics on", page.locator("#consent-summary").inner_text()
+                ),
+            ),
+            "availability-status-switch": (
+                ".status-switch__option[data-status='booked']",
+                lambda page: self.assertEqual(page.locator("#status-text").inner_text(), "Booked until March"),
+            ),
+            "view-density-switch": (
+                ".density-switch__option[data-density='compact']",
+                lambda page: self.assertEqual(
+                    page.locator("#card-grid").get_attribute("data-density"), "compact"
+                ),
             ),
         }
 
