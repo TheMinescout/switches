@@ -72,6 +72,56 @@ SWITCHES = [
             ("click", ".temp-switch__option[data-unit='c']", 700),
         ],
     },
+    {
+        "slug": "currency-unit-switch",
+        "steps": [
+            ("wait", 700),
+            ("click", ".currency-switch__option[data-currency='eur']", 900),
+            ("click", ".currency-switch__option[data-currency='gbp']", 900),
+            ("click", ".currency-switch__option[data-currency='usd']", 700),
+        ],
+    },
+    {
+        "slug": "weight-unit-switch",
+        "steps": [
+            ("wait", 700),
+            ("click", ".weight-switch__option[data-unit='oz']", 900),
+            ("click", ".weight-switch__option[data-unit='g']", 700),
+        ],
+    },
+    {
+        "slug": "notification-cadence-switch",
+        "steps": [
+            ("wait", 700),
+            ("click", ".cadence-switch__option[data-cadence='daily']", 900),
+            ("click", ".cadence-switch__option[data-cadence='off']", 900),
+            ("click", ".cadence-switch__option[data-cadence='instant']", 700),
+        ],
+    },
+    {
+        "slug": "privacy-consent-switch",
+        "steps": [
+            ("wait", 700),
+            ("click", ".consent-switch__option[data-consent='analytics']", 900),
+            ("click", ".consent-switch__option[data-consent='essential']", 700),
+        ],
+    },
+    {
+        "slug": "availability-status-switch",
+        "steps": [
+            ("wait", 700),
+            ("click", ".status-switch__option[data-status='booked']", 900),
+            ("click", ".status-switch__option[data-status='available']", 700),
+        ],
+    },
+    {
+        "slug": "view-density-switch",
+        "steps": [
+            ("wait", 700),
+            ("click", ".density-switch__option[data-density='compact']", 900),
+            ("click", ".density-switch__option[data-density='comfortable']", 700),
+        ],
+    },
 ]
 
 

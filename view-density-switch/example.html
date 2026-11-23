@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>View density switch — live example</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231b1714'/%3E%3Crect x='7' y='12' width='18' height='8' rx='4' fill='none' stroke='%23f7f4ee' stroke-width='2'/%3E%3Ccircle cx='20' cy='16' r='2.6' fill='%23f7f4ee'/%3E%3C/svg%3E">
+<meta name="description" content="A zero-dependency Comfortable / Compact view density switch that re-spaces a sample card grid.">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f1f1f6;
+    --surface: #ffffff;
+    --surface-soft: #f7f7fb;
+    --fg: #191a24;
+    --muted: #62647a;
+    --border: #e0e1ec;
+    --accent: #3d47a8;
+    --accent-soft: #e2e5fa;
+    --track: #e9e9f1;
+    --shadow-card: 0 1px 2px rgb(25 26 36 / 0.04), 0 18px 40px -20px rgb(25 26 36 / 0.25);
+    --shadow-lift: 0 0 0 1px rgb(25 26 36 / 0.06), 0 1px 2px rgb(25 26 36 / 0.08), 0 3px 8px -2px rgb(25 26 36 / 0.1);
+    --shadow-press: inset 0 1px 2px rgb(25 26 36 / 0.12), inset 0 0 0 1px rgb(25 26 36 / 0.04);
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: clamp(1.25rem, 4vw, 3rem);
+    font-family: var(--font);
+    color: var(--fg);
+    background:
+      radial-gradient(820px 460px at 8% -10%, #eef0ff 0%, transparent 58%),
+      radial-gradient(760px 420px at 104% 108%, #eef7ff 0%, transparent 55%),
+      var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .demo { width: min(660px, 100%); }
+
+  .eyebrow {
+    margin: 0 0 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(1.9rem, 5vw, 2.6rem);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+  }
+
+  .lede {
+    margin: 0.6rem 0 1.5rem;
+    max-width: 46ch;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 1.25rem;
+    padding: clamp(1.1rem, 3vw, 1.5rem);
+    box-shadow: var(--shadow-card);
+  }
+
+  .card__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .card__title { margin: 0; font-size: 1.02rem; font-weight: 700; letter-spacing: -0.01em; }
+  .card__sub { margin: 0.25rem 0 0; font-size: 0.82rem; color: var(--muted); }
+
+  /* --- The switch ------------------------------------------------------- */
+  .density-switch {
+    position: relative;
+    display: inline-grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: center;
+    height: 2.5rem;
+    padding: 0.22rem;
+    border-radius: 9999px;
+    background: var(--track);
+    box-shadow: var(--shadow-press);
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .density-switch__thumb {
+    position: absolute;
+    top: 0.22rem;
+    bottom: 0.22rem;
+    left: 0.22rem;
+    width: calc(50% - 0.22rem);
+    border-radius: 9999px;
+    background: var(--surface);
+    box-shadow: var(--shadow-lift);
+    transition: transform 300ms var(--ease);
+  }
+
+  .density-switch[data-density="comfortable"] .density-switch__thumb { transform: translateX(0); }
+  .density-switch[data-density="compact"] .density-switch__thumb { transform: translateX(100%); }
+
+  .density-switch__option {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 0 0.65rem;
+    border: 0;
+    border-radius: 9999px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 160ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .density-switch__option:hover { color: var(--fg); }
+  .density-switch__option[aria-pressed="true"] { color: var(--fg); }
+  .density-switch__option:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* --- Project grid ----------------------------------------------------- */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    transition: gap 260ms var(--ease);
+  }
+
+  .card-grid[data-density="compact"] { gap: 0.45rem; }
+
+  .project-card {
+    padding: 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 0.9rem;
+    background: var(--surface-soft);
+    transition: padding 260ms var(--ease), border-radius 260ms var(--ease);
+  }
+
+  .card-grid[data-density="compact"] .project-card {
+    padding: 0.55rem;
+    border-radius: 0.65rem;
+  }
+
+  .project-card__name { margin: 0; font-size: 0.86rem; font-weight: 700; letter-spacing: -0.01em; }
+  .project-card__meta { margin: 0.18rem 0 0; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent); }
+  .project-card__excerpt { margin: 0.45rem 0 0; font-size: 0.76rem; line-height: 1.5; color: var(--muted); }
+
+  .card-grid[data-density="compact"] .project-card__excerpt { display: none; }
+  .card-grid[data-density="compact"] .project-card__meta { margin-top: 0.1rem; font-size: 0.62rem; }
+
+  .density-summary {
+    margin: 0.9rem 0 0;
+    padding: 0.65rem 0.9rem;
+    border-radius: 0.8rem;
+    border: 1px solid var(--border);
+    background: var(--surface-soft);
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .density-summary strong { color: var(--fg); font-weight: 650; }
+
+  .foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-top: 1.1rem;
+    font-size: 0.82rem;
+  }
+
+  .foot a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--border); padding-bottom: 1px; }
+  .foot a:hover { color: var(--accent); border-color: var(--accent); }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px; height: 1px;
+    margin: -1px; padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Embedded preview mode used by the root showcase. */
+  html.is-embedded body { padding: 1.25rem; }
+  html.is-embedded .eyebrow,
+  html.is-embedded h1,
+  html.is-embedded .lede,
+  html.is-embedded .foot { display: none; }
+
+  @media (max-width: 460px) {
+    .density-switch { width: 100%; }
+    .density-switch__option { padding: 0 0.4rem; font-size: 0.72rem; }
+    .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+<main class="demo">
+  <p class="eyebrow">Minescout switches &middot; 10 / 10</p>
+  <h1>View density</h1>
+  <p class="lede">A Comfortable / Compact control for dense dashboards. It changes the grid gap, card padding and how much detail each card shows.</p>
+
+  <section class="card" data-preview aria-labelledby="card-title">
+    <div class="card__top">
+      <div>
+        <h2 class="card__title" id="card-title">Project grid</h2>
+        <p class="card__sub">Adjust how much room each card gets.</p>
+      </div>
+
+      <div class="density-switch" id="density-switch" role="group" aria-label="View density" data-density="comfortable">
+        <span class="density-switch__thumb" aria-hidden="true"></span>
+        <button class="density-switch__option" type="button" data-density="comfortable" aria-pressed="true">Comfortable</button>
+        <button class="density-switch__option" type="button" data-density="compact" aria-pressed="false">Compact</button>
+      </div>
+    </div>
+
+    <div class="card-grid" id="card-grid" data-density="comfortable">
+      <article class="project-card">
+        <p class="project-card__meta">Web app</p>
+        <h3 class="project-card__name">Atlas board</h3>
+        <p class="project-card__excerpt">A planning board for small product teams.</p>
+      </article>
+      <article class="project-card">
+        <p class="project-card__meta">Brand</p>
+        <h3 class="project-card__name">Field notes</h3>
+        <p class="project-card__excerpt">Identity and print system for a field school.</p>
+      </article>
+      <article class="project-card">
+        <p class="project-card__meta">Mobile</p>
+        <h3 class="project-card__name">Trailhead</h3>
+        <p class="project-card__excerpt">Offline-first route planner for hikers.</p>
+      </article>
+      <article class="project-card">
+        <p class="project-card__meta">Dashboard</p>
+        <h3 class="project-card__name">Signal</h3>
+        <p class="project-card__excerpt">Live metrics without the wall of charts.</p>
+      </article>
+      <article class="project-card">
+        <p class="project-card__meta">Marketing</p>
+        <h3 class="project-card__name">Harbor</h3>
+        <p class="project-card__excerpt">A booking site for a coastal studio.</p>
+      </article>
+      <article class="project-card">
+        <p class="project-card__meta">Tooling</p>
+        <h3 class="project-card__name">Loom</h3>
+        <p class="project-card__excerpt">A tiny component library for editors.</p>
+      </article>
+    </div>
+
+    <p class="density-summary" id="density-summary"><strong>Comfortable spacing.</strong> Room to breathe, with a short summary on every card.</p>
+
+    <p class="visually-hidden" role="status" aria-live="polite" id="live-status">Comfortable spacing.</p>
+  </section>
+
+  <nav class="foot" aria-label="Switch links">
+    <a href="../index.html">&larr; All switches</a>
+    <a href="how-to-add.md">How to add this switch &rarr;</a>
+  </nav>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  if (new URLSearchParams(window.location.search).has("embed")) {
+    document.documentElement.classList.add("is-embedded");
+  }
+
+  var STORAGE_KEY = "view-density-switch";
+  var DENSITIES = ["comfortable", "compact"];
+  var MODES = {
+    comfortable: {
+      summary: "<strong>Comfortable spacing.</strong> Room to breathe, with a short summary on every card.",
+      status: "Comfortable spacing."
+    },
+    compact: {
+      summary: "<strong>Compact spacing.</strong> Tighter gaps and padding, and excerpts are hidden.",
+      status: "Compact spacing."
+    }
+  };
+
+  var root = document.getElementById("density-switch");
+  var buttons = Array.prototype.slice.call(root.querySelectorAll(".density-switch__option"));
+  var grid = document.getElementById("card-grid");
+  var summary = document.getElementById("density-summary");
+  var status = document.getElementById("live-status");
+
+  var density = "comfortable";
+
+  function render() {
+    var mode = MODES[density];
+    root.dataset.density = density;
+    grid.dataset.density = density;
+    buttons.forEach(function (button) {
+      button.setAttribute("aria-pressed", String(button.dataset.density === density));
+    });
+    summary.innerHTML = mode.summary;
+    status.textContent = mode.status;
+  }
+
+  function setDensity(next) {
+    if (DENSITIES.indexOf(next) === -1 || next === density) return;
+    density = next;
+    try { localStorage.setItem(STORAGE_KEY, density); } catch (err) { /* storage may be unavailable */ }
+    render();
+  }
+
+  buttons.forEach(function (button) {
+    button.addEventListener("click", function () { setDensity(button.dataset.density); });
+  });
+
+  root.addEventListener("keydown", function (event) {
+    var index = DENSITIES.indexOf(density);
+    var next = null;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") next = DENSITIES[Math.min(index + 1, DENSITIES.length - 1)];
+    else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = DENSITIES[Math.max(index - 1, 0)];
+    else if (event.key === "Home") next = DENSITIES[0];
+    else if (event.key === "End") next = DENSITIES[DENSITIES.length - 1];
+    if (next === null) return;
+    event.preventDefault();
+    setDensity(next);
+    buttons[DENSITIES.indexOf(density)].focus();
+  });
+
+  try {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (DENSITIES.indexOf(saved) !== -1) density = saved;
+  } catch (err) { /* storage may be unavailable */ }
+
+  render();
+})();
+</script>
+</body>
+</html>

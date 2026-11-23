@@ -1,0 +1,127 @@
+{
+  "site": {
+    "repo": "https://github.com/TheMinescout/switches",
+    "demo_base": "https://theminescout.github.io/switches",
+    "request_url": "https://github.com/TheMinescout/switches/issues/new?title=New+Switch+Request%3A+&body=**What+should+the+switch+toggle%3F**%0A%0A**Options+(e.g.+Option+A+%7C+Option+B)%3A**%0A%0A**Where+do+you+plan+to+use+it%3F**"
+  },
+  "categories": [
+    { "id": "measurement", "label": "Measurement & units" },
+    { "id": "pricing", "label": "Pricing & money" },
+    { "id": "appearance", "label": "Appearance & layout" },
+    { "id": "notifications", "label": "Notifications" },
+    { "id": "privacy", "label": "Privacy & consent" },
+    { "id": "status", "label": "Availability & status" }
+  ],
+  "switches": [
+    {
+      "number": "01",
+      "slug": "mm-in-unit-switch",
+      "name": "mm | in unit switch",
+      "summary": "The unit toggle from The Chop Lab, with live millimetre to inch conversion.",
+      "category": "measurement",
+      "options": 2,
+      "tags": ["units", "localStorage", "live conversion"],
+      "anchor": "01-mm--in-unit-switch",
+      "quiz": { "detail": "Length (mm / in)" }
+    },
+    {
+      "number": "02",
+      "slug": "billing-cycle-switch",
+      "name": "Billing cycle switch",
+      "summary": "Monthly / Yearly with a Save 20% badge that updates plan prices in place.",
+      "category": "pricing",
+      "options": 2,
+      "tags": ["pricing", "annual discount", "live prices"],
+      "anchor": "02-billing-cycle-switch",
+      "quiz": { "detail": "Billing period (Monthly / Yearly)" }
+    },
+    {
+      "number": "03",
+      "slug": "theme-appearance-switch",
+      "name": "Theme appearance switch",
+      "summary": "Light / Dark / System segmented pill with localStorage persistence.",
+      "category": "appearance",
+      "options": 3,
+      "tags": ["dark mode", "prefers-color-scheme", "localStorage"],
+      "anchor": "03-theme-appearance-switch",
+      "quiz": { "detail": "Colour theme (Light / Dark / System)" }
+    },
+    {
+      "number": "04",
+      "slug": "temperature-unit-switch",
+      "name": "Temperature unit switch",
+      "summary": "°F / °C toggle wired to a live temperature converter.",
+      "category": "measurement",
+      "options": 2,
+      "tags": ["units", "range slider", "live conversion"],
+      "anchor": "04-temperature-unit-switch",
+      "quiz": { "detail": "Temperature (°F / °C)" }
+    },
+    {
+      "number": "05",
+      "slug": "currency-unit-switch",
+      "name": "Currency unit switch",
+      "summary": "USD / EUR / GBP pill that converts sample prices live.",
+      "category": "pricing",
+      "options": 3,
+      "tags": ["currency", "live conversion", "localStorage"],
+      "anchor": "05-currency-unit-switch",
+      "quiz": { "detail": "Currency (USD / EUR / GBP)" }
+    },
+    {
+      "number": "06",
+      "slug": "weight-unit-switch",
+      "name": "Weight unit switch",
+      "summary": "g / oz mass toggle with live conversion and localStorage persistence.",
+      "category": "measurement",
+      "options": 2,
+      "tags": ["units", "localStorage", "live conversion"],
+      "anchor": "06-weight-unit-switch",
+      "quiz": { "detail": "Weight (g / oz)" }
+    },
+    {
+      "number": "07",
+      "slug": "notification-cadence-switch",
+      "name": "Notification cadence switch",
+      "summary": "Instant / Daily / Off segmented pill that previews alert behaviour.",
+      "category": "notifications",
+      "options": 3,
+      "tags": ["notifications", "digest", "preferences"],
+      "anchor": "07-notification-cadence-switch",
+      "quiz": { "detail": "Alert cadence (Instant / Daily / Off)" }
+    },
+    {
+      "number": "08",
+      "slug": "privacy-consent-switch",
+      "name": "Privacy consent switch",
+      "summary": "Essential / Analytics consent toggle with a live plain-language summary.",
+      "category": "privacy",
+      "options": 2,
+      "tags": ["privacy", "consent", "gdpr"],
+      "anchor": "08-privacy-consent-switch",
+      "quiz": { "detail": "Consent level (Essential / Analytics)" }
+    },
+    {
+      "number": "09",
+      "slug": "availability-status-switch",
+      "name": "Availability status switch",
+      "summary": "Available / Booked studio status badge for freelancer headers.",
+      "category": "status",
+      "options": 2,
+      "tags": ["status", "freelance", "header"],
+      "anchor": "09-availability-status-switch",
+      "quiz": { "detail": "Studio status (Available / Booked)" }
+    },
+    {
+      "number": "10",
+      "slug": "view-density-switch",
+      "name": "View density switch",
+      "summary": "Comfortable / Compact toggle that re-spaces a sample card grid.",
+      "category": "appearance",
+      "options": 2,
+      "tags": ["layout", "density", "cards"],
+      "anchor": "10-view-density-switch",
+      "quiz": { "detail": "View density (Comfortable / Compact)" }
+    }
+  ]
+}
